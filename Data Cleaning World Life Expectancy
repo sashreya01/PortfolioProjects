@@ -1,0 +1,77 @@
+SELECT * FROM worldlifexpectancy;
+
+#Looking for duplicate values
+SELECT Country, Year, concat(Country, Year), count(concat(Country, Year)) 
+FROM worldlifexpectancy
+group by Country, Year, concat(Country, Year)
+having count(concat(Country, Year)) >1;
+
+#Deleting duplicate values
+DELETE FROM worldlifexpectancy
+WHERE Row_ID IN
+(SELECT Row_ID
+FROM
+(SELECT Row_ID, concat(Country, Year), 
+ROW_NUMBER() OVER(PARTITION BY concat(Country, Year) ORDER BY concat(Country, Year)) as rn
+FROM World_life_expectancy.worldlifexpectancy) as tt
+WHERE rn>1);
+
+
+SELECT COUNTRY,Status
+FROM worldlifexpectancy
+WHERE Status= '';
+
+# Populating missing values
+UPDATE worldlifexpectancy
+SET Status= NULL
+WHERE Status='';
+
+SELECT COUNTRY,Status
+FROM worldlifexpectancy
+WHERE Status= NULL;
+
+WITH CTE_Developing_count AS (SELECT DISTINCT (COUNTRY)
+FROM worldlifexpectancy
+WHERE Status='Developing')
+
+UPDATE worldlifexpectancy
+SET Status = 'Developing'
+WHERE Status IS NULL
+AND COUNTRY IN (SELECT COUNTRY FROM CTE_Developing_count);
+
+
+
+select*
+FROM worldlifexpectancy;
+
+WITH CTE_Developing_count AS (SELECT DISTINCT (COUNTRY)
+FROM worldlifexpectancy
+WHERE Status='Developed')
+
+UPDATE worldlifexpectancy
+SET Status = 'Developed'
+WHERE Status IS NULL
+AND COUNTRY IN (SELECT COUNTRY FROM CTE_Developing_count);
+
+
+
+SELECT t1.Country,t1.Year,t1.Lifeexpectancy,t2.Country,t2.Year,t2.Lifeexpectancy,t3.Country,t3.Year,t3.Lifeexpectancy,
+ ROUND((t2.Lifeexpectancy + t3. Lifeexpectancy)/2,1) as avg_life_of_both_table
+FROM worldlifexpectancy t1
+	JOIN  worldlifexpectancy t2
+		ON  t1.Country=t2.Country
+		AND t1.Year=t2.Year-1
+	JOIN  worldlifexpectancy t3
+		ON  t1.Country=t3.Country
+		AND t1.Year=t3.Year+1;
+
+# Populating missing lifeecpectancy data based on other relevant data 
+UPDATE worldlifexpectancy t1
+JOIN  worldlifexpectancy t2
+	ON  t1.Country=t2.Country
+	AND t1.Year=t2.Year-1
+JOIN  worldlifexpectancy t3
+	ON  t1.Country=t3.Country
+	AND t1.Year=t3.Year+1
+SET t1.`Lifeexpectancy`= ROUND((t2.Lifeexpectancy + t3. Lifeexpectancy)/2,1)
+WHERE t1.`Lifeexpectancy`=''
