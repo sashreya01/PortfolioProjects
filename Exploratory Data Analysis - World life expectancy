@@ -1,0 +1,56 @@
+#COMAPRE LIFE EXPEPECTENCY OF DIFFERENT COUNTRIES IN 15 YEARS#
+SELECT Country, MIN(Lifeexpectancy), MAX(Lifeexpectancy), ROUND((MAX(Lifeexpectancy)-MIN(Lifeexpectancy)),1) AS Life_expectancy_in_15_yrs
+FROM worldlifexpectancy
+GROUP BY Country
+HAVING  MAX(Lifeexpectancy) <> 0
+AND  MAX(Lifeexpectancy) <> 0
+ORDER BY Life_expectancy_in_15_yrs DESC;
+
+# AVG YEAR THAT IS DONE REALLY WELL#
+SELECT Year, round(AVG(Lifeexpectancy),2)
+FROM worldlifexpectancy
+GROUP BY Year;
+
+# Does increased in GDP has any correlation with life expectency?
+SELECT Country,ROUND(AVG(Lifeexpectancy),1) AS Avg_Life_exp, ROUND(AVG(GDP),1) AS Avg_GDP
+FROM worldlifexpectancy
+GROUP BY Country
+HAVING Avg_Life_exp >0
+AND Avg_GDP> 0
+ORDER BY Avg_GDP DESC;
+
+#HIGH GDP has High life expectency and LOW GDP has low life expectency. that's how..
+SELECT 
+SUM(CASE WHEN GDP>=1500 THEN 1 ELSE 0 END) High_GDP_count,
+ROUND(AVG(CASE WHEN GDP>=1500 THEN Lifeexpectancy ELSE NULL END),2) High_GDP_Life_exp,
+SUM(CASE WHEN GDP<=1500 THEN 1 ELSE 0 END) Low_GDP_count,
+ROUND(AVG(CASE WHEN GDP<=1500 THEN Lifeexpectancy ELSE NULL END),2) Low_GDP_Life_exp
+FROM worldlifexpectancy;
+
+#AVG Life expectancy btw devloping and develpoed countries
+SELECT Status,count(DISTINCT Country), ROUND(AVG(Lifeexpectancy),1) AS Avg_Life_exp
+FROM worldlifexpectancy
+GROUP BY Status
+HAVING Avg_Life_exp >0;
+
+# Higher developing countries pay higher % expenditure and have high expectancy rate 
+SELECT  status, ROUND(AVG(Lifeexpectancy),1) AS Avg_Life_exp,
+ROUND(AVG(GDP),1) AS Avg_GDP,
+ROUND(AVG(percentageexpenditure),1) AS AVG_Percent_Health_sector_Expenditure
+FROM worldlifexpectancy
+GROUP BY status
+HAVING Avg_Life_exp >0
+AND Avg_GDP>0
+ORDER BY Avg_Life_exp DESC;
+
+
+# Developed country with lower mortality rate and higher life expectancy 
+SELECT  status, ROUND(AVG(Lifeexpectancy),1) AS Avg_Life_exp, 
+ROUND(AVG(AdultMortality),1) AS AVG_Mortality_rate
+FROM worldlifexpectancy
+GROUP BY status
+HAVING Avg_Life_exp >0
+AND AVG_Mortality_rate>0
+ORDER BY Avg_Life_exp DESC
+
+
